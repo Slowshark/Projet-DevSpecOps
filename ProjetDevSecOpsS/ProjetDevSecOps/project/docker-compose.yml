@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: project_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: tasksdb
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d tasksdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devsecops-network
+
+  # Node.js Web Application
+  webapp:
+    image: kubernetes-webapp:latest
+    container_name: project_webapp
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      # PostgreSQL Configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: tasksdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supersecretpassword
+      # Supabase (optional, will fallback to PostgreSQL)
+      SUPABASE_URL: "https://example.supabase.co"
+      SUPABASE_ANON_KEY: "example-anon-key"
+    ports:
+      - "3000:3000"
+    networks:
+      - devsecops-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  devsecops-network:
+    driver: bridge

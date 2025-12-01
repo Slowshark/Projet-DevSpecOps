@@ -1,0 +1,15 @@
+{
+  "name": "kubernetes-webapp-server",
+  "version": "1.0.0",
+  "description": "Node.js server for Kubernetes deployment project",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@supabase/supabase-js": "^2.38.0",
+    "pg": "^8.11.1"
+  }
+}

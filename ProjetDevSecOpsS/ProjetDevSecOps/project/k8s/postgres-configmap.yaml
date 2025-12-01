@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: devsecops
+  labels:
+    app: postgres
+data:
+  POSTGRES_HOST: postgres-service.devsecops.svc.cluster.local
+  POSTGRES_PORT: "5432"
+  POSTGRES_MAX_CONNECTIONS: "100"
+  POSTGRES_SHARED_BUFFERS: "256MB"
